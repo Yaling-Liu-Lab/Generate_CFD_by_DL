@@ -21,6 +21,7 @@ def get_solution(input_T, isNeum, dtype = torch.FloatTensor):
     
     # Acquire the real compute domain of T   
     T = padT[1:-1,1:-1]
+    L = 1
     h = L / np.size(padT[0,:])
     T_new = np.copy(T)
     iteration = 0
