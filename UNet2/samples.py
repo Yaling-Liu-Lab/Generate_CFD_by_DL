@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
-from get_solution import get_solution
+from .get_solution import get_solution
 import matplotlib.pyplot as plt
 
 def get_training_data(batch_size, domain_size):
@@ -43,30 +43,36 @@ def get_samples(size,top,bottom,left,right,geometry,d=5):
     solution = get_solution(T, geo).cpu().numpy()[0,0,:,:] # solution in 2D numpy, while T in 4D tensor
     return sample, solution
 
-def show_samples(f_0, n_0, epoch, dirName, geometry, d=1):
+def show_samples(solution, prediction4D, epoch, dirName, geometry, d=1):
     "f_0 solution"
     "n_0 prediction"
 
-    size = f_0.shape[0]
-    n_0 = n_0.cpu().detach().numpy()[0,0,:,:]
+    size = solution.shape[0]
+    prediction = prediction4D.cpu().detach().numpy()[0,0,:,:]
 
     if d != 0:
         geo = geometry[0,0,:,:].cpu().numpy()
         geo[geo == 0] = np.nan
-        f_0  = f_0 * geo
-        n_0  = n_0 * geo
+        solution  = solution * geo
+        prediction  = prediction * geo
     #     f_0[size//2 - d + 1 : size//2 + d - 1, size//2 -d + 1 : size//2 + d - 1] = np.nan
     #     n_0[0,0, size//2 -d + 1 : size//2 + d - 1, size//2 -d + 1 : size//2 + d - 1] = np.nan
 
-    plt.figure(figsize=(16, 10))
-    
-    plt.subplot(1,2,1)
-    plt.imshow(n_0, vmin=0, vmax=1, cmap=plt.cm.jet)
-    plt.axis('equal')
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 8))
 
-    plt.subplot(1,2,2)
-    plt.imshow(f_0, vmin=0, vmax=1, cmap=plt.cm.jet)
-    plt.axis('equal')
+    L1_distance = np.abs(prediction - solution)
+
+    ax1.imshow(prediction, vmin=0, vmax=1, cmap=plt.cm.inferno)
+    ax1.set_title("Generation")
+
+    ax2.imshow(solution, vmin=0, vmax=1, cmap=plt.cm.inferno)
+    ax2.set_title("FDM Solution")
+
+    IM = ax3.imshow(L1_distance, vmin=0, vmax=1, cmap=plt.cm.inferno)
+    ax3.set_title("L1 distance")
+
+    cb_ax = fig.add_axes([0.15, 0.1, 0.7, 0.02])
+    cbar = fig.colorbar(IM, cax=cb_ax, orientation = "horizontal")
 
     plt.savefig('{}/predict_epoch{}.png'.format(dirName, epoch))
     plt.close()

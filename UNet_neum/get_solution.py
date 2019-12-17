@@ -4,7 +4,7 @@ import numpy as np
 
 def get_solution(input_T, isNeum, dtype = torch.FloatTensor):
     "FDM method to solve laplace eqn"
-    "a denotes the Neumann boundary condition at X = 0"
+  
     maxIter = 1e8
     padT = input_T[0,0,:,:].numpy()
     output_T = input_T.clone().numpy()
